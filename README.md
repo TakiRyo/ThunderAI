@@ -1,4 +1,10 @@
-# ![ThunderAI icon](images/icon-32px.png "ThunderAI") ThunderAI
+# ![ThunderAI icon](images/icon-32px.png "ThunderAI") ThunderAI Taki
+
+> [!IMPORTANT]
+> **This is a modified fork of [micz/ThunderAI](https://github.com/micz/ThunderAI), not the official add-on.**
+> It is distributed under the GPLv3 as "ThunderAI Taki" with a separate add-on ID
+> (`thunderai-taki@sum.sd.keio.ac.jp`) so it can be installed alongside the original.
+> Please report issues with this build here, not to the upstream project.
 
 ThunderAI is a Thunderbird Addon that uses the capabilities of ChatGPT, Google Gemini, Claude or Ollama to enhance email management.
 
