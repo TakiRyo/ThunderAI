@@ -476,7 +476,11 @@ messenger.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     if(prefs_repl.composing_plain_text){
                         text = stripHtmlKeepLines(text);
                     }
-                    await browser.tabs.sendMessage(tabId, { command: "replaceSelectedText", text: text, tabId: tabId });
+                    // A subject means this came from "Write an email", which deliberately
+                    // leaves the selection collapsed so the text lands above the signature.
+                    // Inserting at the caret is the intent there, not a fallback, so skip
+                    // the "nothing is selected" confirmation.
+                    await browser.tabs.sendMessage(tabId, { command: "replaceSelectedText", text: text, tabId: tabId, insert_at_caret: composeSubject.subject !== '' });
                     return true;
                 }
                 return _replaceSelectedText(message.tabId, message.text);

@@ -245,6 +245,11 @@ that first line off and applies it with `browser.compose.setComposeDetails(tabId
 before the body is inserted. Only `subject` is passed, so the rest of the compose window —
 including the signature block Thunderbird pre-filled — is left alone.
 
+Because a collapsed selection is the intended state for this prompt rather than a mistake,
+the background also sets `insert_at_caret` on the `replaceSelectedText` message when a
+subject was found, which suppresses the "no text is selected" confirmation in
+`mzta-compose-script.js`. Every other prompt still gets the confirmation.
+
 Both the webchat window (`messagesArea.js`) and the ChatGPT Web content script
 (`mzta-chatgpt.js`) send their "use this answer" result through the same
 `chatgpt_replaceSelectedText` background command, so handling it there covers every

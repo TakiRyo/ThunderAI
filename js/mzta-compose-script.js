@@ -286,8 +286,10 @@ switch (message.command) {
 
   case "replaceSelectedText": {
     const selectedText = window.getSelection().toString();
-    let force_insert = false;
-    if (selectedText === '') {
+    // The caller already knows a caret insert is what was wanted, so there is
+    // nothing to warn about.
+    let force_insert = !!message.insert_at_caret;
+    if (selectedText === '' && !force_insert) {
       if(!confirm(browser.i18n.getMessage("Replace_No_Selected_Text"))) {
         return Promise.resolve(false);
       }else{
@@ -295,16 +297,25 @@ switch (message.command) {
       }
     }
     const sel = window.getSelection();
-    if (!sel || sel.type !== "Range" || !sel.rangeCount) {
-      if(!force_insert) {
-        return Promise.resolve(false);
-      }
+    // Without a range there is nothing to anchor the insert to, so bail out rather
+    // than let getRangeAt() throw inside the message listener.
+    if (!sel || !sel.rangeCount || (sel.type !== "Range" && !force_insert)) {
+      return Promise.resolve(false);
     }
     const r = sel.getRangeAt(0);
     r.deleteContents();
     const parser = new DOMParser();
     const doc = parser.parseFromString(message.text, 'text/html');
-    r.insertNode(doc.body);
+    // Insert the parsed nodes, not the <body> that DOMParser wrapped them in:
+    // dropping a second <body> inside the editor's own body leaves the caret in
+    // an element that cannot legally be there, which confuses the paragraph-style
+    // control and the editor's save path.
+    const imported = document.importNode(doc.body, true);
+    const fragment = document.createDocumentFragment();
+    while (imported.firstChild) {
+      fragment.appendChild(imported.firstChild);
+    }
+    r.insertNode(fragment);
     browser.runtime.sendMessage({command: "compose_reloadBody", tabId: message.tabId});
     return Promise.resolve(true);
   }
