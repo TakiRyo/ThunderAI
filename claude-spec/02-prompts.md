@@ -219,8 +219,17 @@ for — `prompt_this` is the closest, but it requires a text selection to act on
   `need_signature: "1"` path only appends "Sign the message as `default_sign_name`", which
   would conflict with the signature block Thunderbird already put in the window and which
   `{%mail_typed_text%}` feeds back to the model
-- Context: `{%recipients%}`, `{%cc_list%}`, `{%mail_subject%}` and `{%mail_typed_text%}` are
-  all resolvable in a compose tab, so the model can match the register to the addressee
+- Context: `{%recipients%}`, `{%cc_list%}` and `{%mail_subject%}` are resolvable in a compose
+  tab, so the model can match the register to the addressee
+
+**Why it must not use `{%mail_typed_text%}`.** `menus.executeMenuAction()` passes
+`hasPlaceholder(curr_prompt.text, 'mail_typed_text')` as `do_autoselect` to the
+`getOnlyTypedText` command, and `mzta-compose-script.js` responds by selecting everything
+from the first body node to the last. That is what lets the rewrite/proofread prompts
+replace an existing draft — but in a fresh compose window the only content is the signature
+block Thunderbird pre-filled, so the insert would land on top of it and wipe it out. Leaving
+the placeholder out keeps the selection collapsed, and `replaceSelectedText` then inserts at
+the caret, above the signature.
 
 **Subject line.** `action: "2"` only ever reached the message body, so the prompt asks the
 model to lay its answer out as:
