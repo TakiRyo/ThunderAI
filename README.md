@@ -5,6 +5,9 @@
 > It is distributed under the GPLv3 as "ThunderAI Taki" with a separate add-on ID
 > (`thunderai-taki@sum.sd.keio.ac.jp`) so it can be installed alongside the original.
 > Please report issues with this build here, not to the upstream project.
+>
+> Run `./build-xpi.sh` to package it into `dist/` as an installable XPI. Raise
+> `version` in `manifest.json` first if you want Thunderbird to treat it as an upgrade.
 
 ThunderAI is a Thunderbird Addon that uses the capabilities of ChatGPT, Google Gemini, Claude or Ollama to enhance email management.
 
