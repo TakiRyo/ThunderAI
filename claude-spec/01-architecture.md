@@ -16,10 +16,9 @@ Web Workers      →  js/workers/model-worker-*.js (one per API provider)
 ## Data Flow: User Action → AI Response
 
 ```
-User clicks popup or presses Ctrl+Alt+A
+User clicks the "AI Assist" toolbar button, presses Ctrl+Alt+A,
+or picks an entry from the right-click context menu
        ↓
-popup/mzta-popup.js   (renders prompt list, handles selection)
-       ↓  (sendMessage to background)
 mzta-background.js    (orchestrates everything)
        ↓
 js/mzta-placeholders.js  (resolves {%placeholder%} values from email data)
@@ -40,6 +39,32 @@ js/mzta-prompts.js       (builds final prompt string)
        ↓
 js/mzta-compose-script.js  (inserts text into Thunderbird compose window and display window)
 ```
+
+### Toolbar Button: direct prompt launch (fork change)
+
+Upstream both actions declare `default_popup: "popup/mzta-popup.html"`, so clicking the
+toolbar button opens the full prompt list. This fork drops `default_popup` from
+`message_display_action` and `compose_action` in `manifest.json` — which is what makes
+`onClicked` fire at all — and instead routes the click straight to a single prompt:
+
+| Tab type | Prompt launched |
+|----------|-----------------|
+| `mail`, `messageDisplay` | `prompt_ask_about_this` |
+| `messageCompose` | `prompt_write_new_mail` |
+
+`launchDefaultPrompt()` in `mzta-background.js` holds that mapping and calls
+`menus.executeMenuAction(promptId)`. `menus.initialize()` registers a listener for **every**
+prompt in `menu_listeners` (not only the ones shown in a menu), so any prompt id can be
+launched this way.
+
+`handleShortcut()` (Ctrl+Alt+A) routes through the same function; it used to call
+`openPopup()`, which now has nothing to open.
+
+The button is labelled "AI Assist". That string is a literal in `manifest.json` rather than
+`__MSG_menu_title__`: the `menu_title` key is translated in every Weblate-managed locale, so
+an `_locales/en` edit would be overridden for any non-English UI.
+
+`popup/` is left in place, unreferenced, to keep the diff against upstream small.
 
 ### Data Flow: Inline Summary on Message Display
 

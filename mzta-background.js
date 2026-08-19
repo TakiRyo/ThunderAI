@@ -126,29 +126,39 @@ browser.contentScripts.register({
     runAt: "document_idle"
   });
 
+// The toolbar button goes straight to one prompt instead of opening the prompt
+// list: reading a message means you want to ask about it, and a compose window
+// means you want a mail written. Both actions dropped their default_popup in the
+// manifest, which is what makes onClicked fire at all.
+const default_action_prompts = {
+    mail: 'prompt_ask_about_this',
+    messageDisplay: 'prompt_ask_about_this',
+    messageCompose: 'prompt_write_new_mail',
+};
+
+function launchDefaultPrompt(tab) {
+    const promptId = default_action_prompts[tab?.type];
+    if (!promptId) {
+        return;
+    }
+    taLog.log("Launching default prompt for a " + tab.type + " tab: " + promptId);
+    return menus.executeMenuAction(promptId);
+}
+
+browser.messageDisplayAction.onClicked.addListener(launchDefaultPrompt);
+browser.composeAction.onClicked.addListener(launchDefaultPrompt);
+
 // Listen for shortcut command
 messenger.commands.onCommand.addListener((command, tab) => {
     if (command === "_thunderai__do_action") {
         handleShortcut(tab);
     }
 });
-    
+
 async function handleShortcut(tab) {
     taLog.log("Shortcut triggered!");
-    if(!["mail", "messageCompose","messageDisplay"].includes(tab.type)){
-        return;
-    }
-    switch (tab.type) {
-        case "mail":
-        case "messageDisplay":
-            browser.messageDisplayAction.openPopup();
-            break;
-        case "messageCompose":
-            browser.composeAction.openPopup();
-            break;
-        default:
-            break;
-    }    
+    // Same two entry points as the button - openPopup() has nothing to open now.
+    launchDefaultPrompt(tab);
 }
 
 function preparePopupMenu(tab) {
