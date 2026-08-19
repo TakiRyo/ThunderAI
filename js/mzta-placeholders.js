@@ -22,6 +22,15 @@ import {
     sanitizeMailHeaders
  } from './mzta-utils.js';
 
+// A MessageHeader exposes recipients/ccList as arrays of address strings, but in a
+// compose tab curr_message is a ComposeDetails, whose to/cc entries can also be
+// {id, type} address-book references. Those need the optional addressBooks
+// permission to resolve, so they are dropped rather than printed as raw ids.
+function joinAddressList(list){
+    if(!Array.isArray(list)) return list;
+    return list.filter(entry => typeof entry === 'string').join(", ");
+}
+
 /*  ================= PLACEHOLDERS PROPERTIES ========================================
 
     ================ BASE PROPERTIES
@@ -596,10 +605,10 @@ export const placeholdersUtils = {
                     finalSubs['author'] = placeholdersUtils.failSafePlaceholders(sanitizeMailHeaders(curr_message.author));
                     break;
                 case 'recipients':
-                    finalSubs['recipients'] = placeholdersUtils.failSafePlaceholders(sanitizeMailHeaders(curr_message.recipients?.join(", ")));
+                    finalSubs['recipients'] = placeholdersUtils.failSafePlaceholders(sanitizeMailHeaders(joinAddressList(curr_message.recipients ?? curr_message.to)));
                     break;
                 case 'cc_list':
-                    finalSubs['cc_list'] = placeholdersUtils.failSafePlaceholders(sanitizeMailHeaders(curr_message.ccList?.join(", ")));
+                    finalSubs['cc_list'] = placeholdersUtils.failSafePlaceholders(sanitizeMailHeaders(joinAddressList(curr_message.ccList ?? curr_message.cc)));
                     break;
                 case 'junk_score':
                     finalSubs['junk_score'] = placeholdersUtils.failSafePlaceholders(curr_message.junkScore);

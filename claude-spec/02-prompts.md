@@ -203,6 +203,25 @@ It is built entirely from existing mechanics — no new code paths:
 button entirely (`if(promptData.action != 0)` in `addActionButtons()`), which would force
 manual copy-paste for drafted replies.
 
+### Free-form Composing: "Write an email" (fork addition)
+
+`prompt_write_new_mail` is the compose-side counterpart of `prompt_ask_about_this`, also
+fork-specific. It covers writing a *new* message (not a reply), which upstream has no prompt
+for — `prompt_this` is the closest, but it requires a text selection to act on.
+
+- `type: "2"` — offered only in a compose tab
+- `need_custom_text: "1"` — the user describes the email they want in the custom-text field
+- `action: "2"` — the "use this answer" button inserts the text into the compose window.
+  With nothing selected, `replaceSelectedText` in `mzta-compose-script.js` asks for
+  confirmation and then inserts at the caret (a collapsed range's `deleteContents()` is a
+  no-op), so an existing signature block is left intact
+- `need_signature: "0"` plus an explicit instruction not to reproduce a signature. The
+  `need_signature: "1"` path only appends "Sign the message as `default_sign_name`", which
+  would conflict with the signature block Thunderbird already put in the window and which
+  `{%mail_typed_text%}` feeds back to the model
+- Context: `{%recipients%}`, `{%cc_list%}`, `{%mail_subject%}` and `{%mail_typed_text%}` are
+  all resolvable in a compose tab, so the model can match the register to the addressee
+
 ## Prompt Types Reference
 
 ```

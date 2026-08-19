@@ -59,6 +59,19 @@ placeholders with `is_dynamic: "1"` (take a parameter after `:`).
 | `mail_text_body_or_selected` | Plain text body, or selected text if any | 0 | |
 | `mail_html_body_or_selected` | HTML body, or selected HTML if any | 0 | |
 
+### `recipients` / `cc_list` in a compose tab (fork fix)
+
+`curr_message` is whatever the current tab yields: a `MessageHeader` in mail and
+messageDisplay tabs, but a `ComposeDetails` in a messageCompose tab. `MessageHeader` names
+the fields `recipients` / `ccList`; `ComposeDetails` names them `to` / `cc`. Upstream reads
+only the `MessageHeader` names, so both placeholders silently resolved to an empty string
+while composing, even though they are declared type 0 (available everywhere).
+
+`getPlaceholdersValues()` now falls back to `to` / `cc`, joining through `joinAddressList()`.
+`ComposeDetails` entries may also be `{id, type}` address-book references rather than address
+strings; resolving those needs the optional `addressBooks` permission, so they are dropped
+instead of being printed as raw ids.
+
 ## Dynamic Placeholders
 
 Dynamic placeholders use a colon separator to pass a parameter:

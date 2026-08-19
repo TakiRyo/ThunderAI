@@ -19,6 +19,14 @@
     "message": "You are helping me with an email I am currently reading.\n\nSubject: {%mail_subject%}\nFrom: {%author%}\nTo: {%recipients%}\nDate: {%mail_datetime%}\n\n\"\"\"\n{%mail_text_body%}\n\"\"\"\n\nAnswer my questions about this email. If I ask you to write a reply, output only the body of the reply itself, with no subject line, no greeting placeholders and no extra commentary, so it can be inserted directly into the compose window.\n\nMy question: {%additional_text%}",
     "description": ""
   },
+  "prompt_write_new_mail": {
+    "message": "Write an email",
+    "description": ""
+  },
+  "prompt_write_new_mail_full_text": {
+    "message": "I am composing a new email and I need you to write it for me.\n\nTo: {%recipients%}\nCc: {%cc_list%}\nSubject: {%mail_subject%}\n\nWhat is already in the compose window (may be empty, and may already end with my signature block):\n\"\"\"\n{%mail_typed_text%}\n\"\"\"\n\nWrite the email described below. Output only the body of the email, ready to be inserted directly into the compose window. Do not write a subject line. Do not add my signature block or contact details, they are already in the window. Do not leave bracketed placeholders such as [Your name] or [Date] - if something is genuinely missing, ask me for it instead of guessing. Do not wrap the answer in code fences and do not add any commentary before or after it. Choose the level of politeness that fits the recipient shown above.\n\nWhat I want to write: {%additional_text%}",
+    "description": ""
+  },
   "prompt_reply": {
     "message": "Reply to this email",
     "description": ""
