@@ -177,6 +177,32 @@ The translate feature uses a single special prompt (`prompt_translate_this`) for
 - Resolves placeholders via `placeholdersUtils.getPlaceholdersValues()` + `replacePlaceholders()`
 - Returns `{ promptText, promptInfo }`
 
+### Free-form Chat: "Ask about this email" (fork addition)
+
+`prompt_ask_about_this` is a fork-specific built-in prompt (not present upstream) that turns
+the webchat popup into a general-purpose assistant for the message being read, in the spirit
+of Gmail's Gemini side panel. It is the first entry in `defaultPrompts`.
+
+It is built entirely from existing mechanics — no new code paths:
+
+- `type: "1"` — offered only while reading a message
+- `need_custom_text: "1"` — the chat window opens with the custom-text field, so the user
+  types their question first instead of picking a task-specific prompt
+- Its text embeds `{%mail_subject%}`, `{%author%}`, `{%recipients%}`, `{%mail_datetime%}` and
+  `{%mail_text_body%}`, so the message is loaded into the conversation with no copy-paste.
+  Note that because the text *contains* placeholders, `buildPrompt()` takes the placeholder
+  branch and does **not** auto-append the body — every field must be listed explicitly.
+- `action: "1"` — every assistant turn gets a "use this answer" button
+  (`addActionButtons()` adds buttons per turn), so a drafted reply can be pushed straight
+  into a compose window. Answers that are not replies simply leave the button unused.
+- `show_in: "both"` — reachable from the toolbar popup and the message-list context menu
+- Follow-up questions work because the API workers keep `conversationHistory`, so the email
+  stays in context for the whole session.
+
+`action: "1"` is deliberate rather than `"0"`: `action: "0"` suppresses the "use this answer"
+button entirely (`if(promptData.action != 0)` in `addActionButtons()`), which would force
+manual copy-paste for drafted replies.
+
 ## Prompt Types Reference
 
 ```

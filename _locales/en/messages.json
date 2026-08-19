@@ -11,6 +11,14 @@
     "message": "Reply in",
     "description": ""
   },
+  "prompt_ask_about_this": {
+    "message": "Ask about this email",
+    "description": ""
+  },
+  "prompt_ask_about_this_full_text": {
+    "message": "You are helping me with an email I am currently reading.\n\nSubject: {%mail_subject%}\nFrom: {%author%}\nTo: {%recipients%}\nDate: {%mail_datetime%}\n\n\"\"\"\n{%mail_text_body%}\n\"\"\"\n\nAnswer my questions about this email. If I ask you to write a reply, output only the body of the reply itself, with no subject line, no greeting placeholders and no extra commentary, so it can be inserted directly into the compose window.\n\nMy question: {%additional_text%}",
+    "description": ""
+  },
   "prompt_reply": {
     "message": "Reply to this email",
     "description": ""

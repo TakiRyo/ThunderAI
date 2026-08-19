@@ -98,6 +98,25 @@ import { integration_options_config } from "../../options/mzta-options-default.j
 
 const defaultPrompts = [
     {
+        id: 'prompt_ask_about_this',
+        name: "__MSG_prompt_ask_about_this__",
+        text: "prompt_ask_about_this_full_text",
+        type: "1",
+        action: "1",
+        need_selected: "0",
+        need_signature: "1",
+        need_custom_text: "1",
+        define_response_lang: "1",
+        use_diff_viewer: "0",
+        chatgpt_web_model: '',
+        chatgpt_web_project: '',
+        chatgpt_web_custom_gpt: '',
+        api_type: '',
+        is_default: "1",
+        is_special: "0",
+        show_in: "both",
+    },
+    {
         id: 'prompt_reply',
         name: "__MSG_prompt_reply__",
         text: "prompt_reply_full_text",
