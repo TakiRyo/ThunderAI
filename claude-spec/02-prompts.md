@@ -222,6 +222,26 @@ for — `prompt_this` is the closest, but it requires a text selection to act on
 - Context: `{%recipients%}`, `{%cc_list%}`, `{%mail_subject%}` and `{%mail_typed_text%}` are
   all resolvable in a compose tab, so the model can match the register to the addressee
 
+**Subject line.** `action: "2"` only ever reached the message body, so the prompt asks the
+model to lay its answer out as:
+
+```
+@@SUBJECT@@ the subject line
+the body of the email
+```
+
+`_replaceSelectedText()` in `mzta-background.js` runs `extractComposeSubject()`
+(`js/mzta-utils.js`) over the answer: when the `COMPOSE_SUBJECT_MARKER` is present it strips
+that first line off and applies it with `browser.compose.setComposeDetails(tabId, {subject})`
+before the body is inserted. Only `subject` is passed, so the rest of the compose window —
+including the signature block Thunderbird pre-filled — is left alone.
+
+Both the webchat window (`messagesArea.js`) and the ChatGPT Web content script
+(`mzta-chatgpt.js`) send their "use this answer" result through the same
+`chatgpt_replaceSelectedText` background command, so handling it there covers every
+connection type with one hook. Answers without the marker pass through untouched, which is
+what keeps `prompt_rewrite_polite`, `prompt_proofread_this` and `prompt_this` unaffected.
+
 ## Prompt Types Reference
 
 ```

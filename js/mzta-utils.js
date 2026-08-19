@@ -305,6 +305,36 @@ export function sanitizeMailHeaders(input){
   return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// Marker the "Write an email" prompt asks the model to put in front of the subject
+// line, so that one answer can fill both the subject field and the body. No other
+// prompt emits it, so its presence is what gates the subject handling.
+export const COMPOSE_SUBJECT_MARKER = '@@SUBJECT@@';
+
+// Splits an answer of the form "@@SUBJECT@@ <subject>\n<body>" into its two parts.
+// The answer arrives as HTML, so the marker line is normally wrapped in a block
+// element: consume up to the end of that first line and drop the wrapper it leaves
+// behind. Returns the input untouched when the marker is absent.
+export function extractComposeSubject(htmlString) {
+  const idx = htmlString.indexOf(COMPOSE_SUBJECT_MARKER);
+  if (idx === -1) return { subject: '', text: htmlString };
+
+  const after = htmlString.slice(idx + COMPOSE_SUBJECT_MARKER.length);
+  const lineEnd = after.match(/<\/(?:p|div|h\d)>|<br\s*\/?>|\n/i);
+  const subject = (lineEnd ? after.slice(0, lineEnd.index) : after)
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .trim();
+
+  const consumed = lineEnd
+    ? idx + COMPOSE_SUBJECT_MARKER.length + lineEnd.index + lineEnd[0].length
+    : htmlString.length;
+  const text = (htmlString.slice(0, idx) + htmlString.slice(consumed))
+    .replace(/^\s*<(p|div)[^>]*>\s*(?:<\/\1>)?/i, '')   // the wrapper the marker line left open
+    .trim();
+
+  return { subject, text };
+}
+
 export function stripHtmlKeepLines(htmlString) {
   // Replaces <p> tags with a newline at the beginning
   // and removes all other HTML tags

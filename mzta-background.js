@@ -45,6 +45,7 @@ import {
     sanitizeChatGPTModelData,
     sanitizeChatGPTWebCustomData,
     stripHtmlKeepLines,
+    extractComposeSubject,
     htmlBodyToPlainText,
     convertNewlinesToParagraphs,
     getConnectionType,
@@ -455,6 +456,21 @@ messenger.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 async function _replaceSelectedText(tabId, text) {
                     //console.log('chatgpt_replaceSelectedText: [' + tabId +'] ' + text)
                     taLog.log("chatgpt_replaceSelectedText text: " + text);
+                    // Both the webchat window and the ChatGPT Web script funnel their
+                    // "use this answer" button through here, so pulling the subject out
+                    // at this point covers every connection type at once.
+                    const composeSubject = extractComposeSubject(text);
+                    if(composeSubject.subject !== ''){
+                        text = composeSubject.text;
+                        try {
+                            // Only the subject is passed: setComposeDetails leaves the
+                            // fields it is not given alone, so the body (and the signature
+                            // already sitting in it) survives.
+                            await browser.compose.setComposeDetails(tabId, { subject: composeSubject.subject });
+                        } catch (err) {
+                            taLog.log("chatgpt_replaceSelectedText could not set the subject: " + err);
+                        }
+                    }
                     original_html = await getOriginalBody(tabId);
                     let prefs_repl = await browser.storage.sync.get({composing_plain_text: prefs_default.composing_plain_text});
                     if(prefs_repl.composing_plain_text){
